@@ -1,0 +1,62 @@
+@model NewsArticlesAndRelatedModel
+
+@{
+    ViewData["Title"] = Model.NewsArticle.Title;
+}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <img class="card-img-top" src="@Model.NewsArticle.ImageUrl" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">@Model.NewsArticle.Title</h5>
+                    <p class="card-text">@Model.NewsArticle.Content</p>
+                    <p class="card-text">
+                        <small class="text-muted">Posted on @Model.NewsArticle.Date by @Model.NewsArticle.Author</small>
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">Category: @Model.NewsArticle.Category</small>
+                    <div class="mt-2">
+                        @foreach (var tag in Model.NewsArticle.Tags)
+                        {
+                            <span class="badge bg-secondary">@tag</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">Related</div>
+                <div class="card-body">
+                    @{
+                        foreach (var newsArticle in Model.RelatedArticles)
+                        {
+                            <a asp-action="Article" asp-route-id="@newsArticle.Id" class="text-decoration-none text-black">
+                                <div class="media mb-3 border-2 card p-2">
+                                    <img src="@newsArticle.ImageUrl" width="200px" height="100px" class="mr-3" alt="News Image">
+                                    <div class="media-body">
+                                        <h5 class="mt-0">@newsArticle.Title</h5>
+                                        <p class="text-muted">@newsArticle.Date.ToLongDateString()</p>
+                                        @newsArticle.Subtitle
+                                        <!-- add tags here -->
+                                        <div class = "mt-1 tags">
+                                            @foreach (var tag in newsArticle.Tags)
+                                            {
+                                                <span class="badge bg-secondary">@tag</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    }
+                                        
+                </div>
+            </div>
+        </div>
+        
+                
+    </div>
+</div>
