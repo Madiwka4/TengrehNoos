@@ -18,27 +18,49 @@ public class HomeController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    
+    
+    public async Task<IActionResult> Index(IFormCollection? form)
     {
+        var selectedTags = new string[0];
+        if (form != null)
+        {
+            selectedTags = form.Keys.Where(k => form[k] == "true").ToArray();
+        }
         var sort = HttpContext.Request.Query["sort"].ToString();
         var newsArticles = new System.Collections.Generic.List<NewsArticle>();
+        var tagsByCount = _context.Tags
+            .Select(t => new TagsWithCountModel
+            {
+                Tag = t,
+                Count = t.NewsArticles.Count,
+                IsSelected = selectedTags.Contains(t.Name),
+            })
+            .OrderByDescending(t => t.Count)
+            .ToList();
         if (string.IsNullOrEmpty(sort))
         {
             sort = "latest";
         }
-        if (sort == "latest")
+
+        if (selectedTags.Length > 0)
         {
-            newsArticles = await _context.NewsArticles
-                .OrderByDescending(n => n.Date)
-                .Take(15)
+            newsArticles = await _context.Tags
+                .Where(t => selectedTags.Contains(t.Name))
+                .SelectMany(t => t.NewsArticles)
                 .ToListAsync();
         }
-        if (sort == "oldest")
+        else
         {
-            newsArticles = await _context.NewsArticles
-                .OrderBy(n => n.Date)
-                .Take(15)
-                .ToListAsync();
+            newsArticles = await _context.NewsArticles.Include(newsArticle => newsArticle.Tags).ToListAsync();
+        }
+        if (sort == "latest")
+        {
+            newsArticles = newsArticles.OrderByDescending(n => n.Date).Take(15).ToList();
+        }
+        else if (sort == "oldest")
+        {
+            newsArticles = newsArticles.OrderBy(n => n.Date).Take(15).ToList();
         }
         var newsarticlelist = new List<NewsArticlePreviewModel>();
         foreach (var newsarticle in newsArticles)
@@ -51,19 +73,25 @@ public class HomeController : Controller
                 Date = newsarticle.Date,
                 ImageUrl = newsarticle.ImageUrl,
                 Category = newsarticle.Category,
-                Tags = newsarticle.Tags,
+                Tags = newsarticle.Tags.Select(t => t.Name).ToList(),
                 Subtitle = newsarticle.Subtitle,
             });
         }
-
-        ViewData["CurrentCategory"] = sort;
-        return View(newsarticlelist);
+        MainPageModel output = new MainPageModel
+        {
+            NewsArticles = newsarticlelist,
+            Tags = tagsByCount,
+        };
+        ViewData["CurrentSort"] = sort;
+        return View(output);
     }
 
     [Route ("Article/{id}")]
     public IActionResult Article(int id)
     {
-        var newsArticle = _context.NewsArticles.Find(id);
+        var newsArticle = _context.NewsArticles
+            .Include(n => n.Tags)
+            .FirstOrDefault(n => n.Id == id);
         if (newsArticle == null)
         {
             return NotFound();
@@ -77,7 +105,7 @@ public class HomeController : Controller
             Content = newsArticle.Content,
             ImageUrl = newsArticle.ImageUrl,
             Category = newsArticle.Category,
-            Tags = newsArticle.Tags,
+            Tags = newsArticle.Tags.Select(t => t.Name).ToList(),
             Subtitle = newsArticle.Subtitle,
         };
         var relatedArticles = _context.NewsArticles
@@ -96,7 +124,7 @@ public class HomeController : Controller
                 Date = n.Date,
                 ImageUrl = n.ImageUrl,
                 Category = n.Category,
-                Tags = n.Tags,
+                Tags = n.Tags.Select(t => t.Name).ToList(),
                 Subtitle = n.Subtitle,
             }).ToList(),
         };

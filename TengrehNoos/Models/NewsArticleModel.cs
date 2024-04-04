@@ -1,3 +1,5 @@
+using TengrehNoos.Entities;
+
 namespace TengrehNoos.Models;
 
 public class NewsArticleModel
@@ -36,4 +38,17 @@ public class NewsArticlesAndRelatedModel
 {
     public NewsArticleModel NewsArticle { get; set; }
     public List<NewsArticlePreviewModel> RelatedArticles { get; set; } = new List<NewsArticlePreviewModel>();
+}
+
+public class TagsWithCountModel
+{
+    public Tag Tag { get; set; } = new Tag();
+    public int Count { get; set; }
+    public bool IsSelected { get; set; }
+}
+
+public class MainPageModel
+{
+    public List<NewsArticlePreviewModel> NewsArticles { get; set; } = new List<NewsArticlePreviewModel>();
+    public List<TagsWithCountModel> Tags { get; set; } = new List<TagsWithCountModel>();
 }

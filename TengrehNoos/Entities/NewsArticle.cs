@@ -18,8 +18,9 @@ public class NewsArticle
     [Required]
     public string Content { get; set; } = string.Empty;
     
+    [MaxLength(500)]
     public string? Subtitle { get; set; }
     public Uri ImageUrl { get; set; } = new Uri("https://madi-wka.xyz/img/nuclearpong.png");
     public string Category { get; set; } = string.Empty;
-    public List<string> Tags { get; set; } = new List<string>();
+    public virtual List<Tag> Tags { get; set; } = new List<Tag>();
 }

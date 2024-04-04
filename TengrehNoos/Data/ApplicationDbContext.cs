@@ -11,4 +11,5 @@ public class ApplicationDbContext : IdentityDbContext
     {
     }
     public DbSet<NewsArticle> NewsArticles { get; set; }
+    public DbSet<Tag> Tags { get; set; }
 }

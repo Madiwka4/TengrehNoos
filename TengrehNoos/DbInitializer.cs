@@ -13,18 +13,36 @@ public static class DbInitializer
             return; // DB has been seeded
         }
 
+        var tagNames = new[] { "Test", "Article" };
+        var tags = tagNames.Select(name => context.Tags.FirstOrDefault(t => t.Name == name) ?? new Tag { Name = name }).ToList();
+        context.Tags.AddRange(tags);
         var testArticle = new NewsArticle
         {
             Title = "Test Article",
             Author = "Test Author",
-            Date = DateTime.Now,
+            Date = DateTime.UtcNow,
             Content = "This is a test article.",
             ImageUrl = new Uri("https://example.com/test.jpg"),
             Category = "News",
-            Tags = new List<string> { "Test", "Article" }
+            Tags = tags,
         };
-
+        
+        var tagNamesS = new[] { "Second Test", "Article" };
+        var tagsS = tagNamesS.Select(name => context.Tags.FirstOrDefault(t => t.Name == name) ?? new Tag { Name = name }).ToList();
+        context.Tags.AddRange(tagsS);
+        var testArticleS = new NewsArticle
+        {
+            Title = "Test Article 2",
+            Author = "Test Author",
+            Date = DateTime.UtcNow,
+            Content = "This is a test article.",
+            ImageUrl = new Uri("https://example.com/test.jpg"),
+            Category = "News",
+            Tags = tagsS,
+        };
+        
         context.NewsArticles.Add(testArticle);
+        context.NewsArticles.Add(testArticleS);
         context.SaveChanges();
     }
 }

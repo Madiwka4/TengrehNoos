@@ -1,5 +1,5 @@
 ﻿@using System.Collections
-@model List<TengrehNoos.Models.NewsArticlePreviewModel>
+@model MainPageModel
 
 @{
     ViewData["Title"] = "Home Page";
@@ -13,7 +13,7 @@
                     <div class="card-header">Latest News</div>
                     <div class="card-body">
                         @{
-                            foreach (var newsArticle in Model)
+                            foreach (var newsArticle in Model.NewsArticles)
                             {
                                 <a asp-action="Article" asp-route-id="@newsArticle.Id" class="text-decoration-none text-black">
                                     <div class="media mb-3 border-2 card p-2">
@@ -40,21 +40,43 @@
 
             <div class="col-md-4">
                 <div class="card mb-4">
-                    <div class="card-header">Categories</div>
+                    <div class="card-header">Sort By</div>
                     <div class="card-body">
                         <ul class="list-group">
                             @{
                                 var sortTypes = new List<string> {"latest", "oldest"};
-                                var currentCategory = ViewData["CurrentCategory"] as string;
-                                foreach (var category in sortTypes)
+                                var currentSort = ViewData["CurrentSort"] as string;
+                                foreach (var sort in sortTypes)
                                 {
-                                    var listItemClass = (string?)category == currentCategory ? "list-group-item bg-light" : "list-group-item";
+                                    var listItemClass = (string?)sort == currentSort ? "list-group-item bg-light" : "list-group-item";
                                     <li class="@listItemClass" style="padding: 0;">
-                                        <a asp-action="Index" asp-route-sort="@category" class="d-block p-2">@category</a>
+                                        <a asp-action="Index" asp-route-sort="@sort" class="d-block p-2 text-decoration-none text-dark">@sort</a>
                                     </li>
                                 }
                             }
                             </ul>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">Categories</div>
+                    <div class="card-body">
+                        <form method="get" asp-action="Index" asp-controller="Home">
+                            <div style="height:200px; overflow:auto;">
+                                @{
+                                    foreach (var tag in Model.Tags)
+                                    {
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="true" id="@tag.Tag.Name" name="@tag.Tag.Name" @(tag.IsSelected ? "checked" : "")>
+                                            <label class="form-check-label" for="@tag.Tag.Name">
+                                                @tag.Tag.Name (@tag.Count)
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-2">Apply</button>
+                            <button type="reset" class="btn btn-secondary mt-2">Reset</button>
+                        </form>
                     </div>
                 </div>
             </div>
