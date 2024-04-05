@@ -20,13 +20,10 @@ public class HomeController : Controller
 
     
     
-    public async Task<IActionResult> Index(IFormCollection? form)
+    public async Task<IActionResult> Index()
     {
-        var selectedTags = new string[0];
-        if (form != null)
-        {
-            selectedTags = form.Keys.Where(k => form[k] == "true").ToArray();
-        }
+        var query = HttpContext.Request.Query["query"].ToString();
+        var selectedTags = HttpContext.Request.Query.Keys.Where(k => Request.Query[k] == "true").ToArray();
         var sort = HttpContext.Request.Query["sort"].ToString();
         var newsArticles = new System.Collections.Generic.List<NewsArticle>();
         var tagsByCount = _context.Tags
@@ -47,12 +44,13 @@ public class HomeController : Controller
         {
             newsArticles = await _context.Tags
                 .Where(t => selectedTags.Contains(t.Name))
-                .SelectMany(t => t.NewsArticles)
-                .ToListAsync();
+                .SelectMany(t => t.NewsArticles).Where(n => n.Title.Contains(query) || n.Content.Contains(query) || query == "")
+                .Include(newsArticle => newsArticle.Tags)
+                .Distinct().ToListAsync();
         }
         else
         {
-            newsArticles = await _context.NewsArticles.Include(newsArticle => newsArticle.Tags).ToListAsync();
+            newsArticles = await _context.NewsArticles.Where(n => n.Title.Contains(query) || n.Content.Contains(query) || query == "").Include(newsArticle => newsArticle.Tags).ToListAsync();
         }
         if (sort == "latest")
         {
@@ -83,6 +81,10 @@ public class HomeController : Controller
             Tags = tagsByCount,
         };
         ViewData["CurrentSort"] = sort;
+        if (query != "")
+        {
+            ViewData["CurrentQuery"] = query;
+        }
         return View(output);
     }
 

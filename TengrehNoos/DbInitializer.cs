@@ -14,7 +14,7 @@ public static class DbInitializer
         }
 
         var tagNames = new[] { "Test", "Article" };
-        var tags = tagNames.Select(name => context.Tags.FirstOrDefault(t => t.Name == name) ?? new Tag { Name = name }).ToList();
+        var tags = tagNames.Select(name => context.Tags.Local.FirstOrDefault(t => t.Name == name) ?? new Tag { Name = name }).ToList();
         context.Tags.AddRange(tags);
         var testArticle = new NewsArticle
         {
@@ -28,7 +28,7 @@ public static class DbInitializer
         };
         
         var tagNamesS = new[] { "Second Test", "Article" };
-        var tagsS = tagNamesS.Select(name => context.Tags.FirstOrDefault(t => t.Name == name) ?? new Tag { Name = name }).ToList();
+        var tagsS = tagNamesS.Select(name => context.Tags.Local.FirstOrDefault(t => t.Name == name) ?? new Tag { Name = name }).ToList();
         context.Tags.AddRange(tagsS);
         var testArticleS = new NewsArticle
         {
