@@ -51,4 +51,6 @@ public class MainPageModel
 {
     public List<NewsArticlePreviewModel> NewsArticles { get; set; } = new List<NewsArticlePreviewModel>();
     public List<TagsWithCountModel> Tags { get; set; } = new List<TagsWithCountModel>();
+    
+    public List<string> Categories { get; set; } = new List<string>();
 }

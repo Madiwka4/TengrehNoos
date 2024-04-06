@@ -9,8 +9,8 @@
             <div class="card mb-4">
                 <img class="card-img-top" src="@Model.NewsArticle.ImageUrl" alt="Card image cap">
                 <div class="card-body">
-                    <h5 class="card-title">@Model.NewsArticle.Title</h5>
-                    <p class="card-text">@Model.NewsArticle.Content</p>
+                    <h5 class="card-title">@Html.Raw(Model.NewsArticle.Title)</h5>
+                    <p class="card-text">@Html.Raw(Model.NewsArticle.Content)</p>
                     <p class="card-text">
                         <small class="text-muted">Posted on @Model.NewsArticle.Date by @Model.NewsArticle.Author</small>
                     </p>
@@ -35,9 +35,9 @@
                         {
                             <a asp-action="Article" asp-route-id="@newsArticle.Id" class="text-decoration-none text-black">
                                 <div class="media mb-3 border-2 card p-2">
-                                    <img src="@newsArticle.ImageUrl" width="200px" height="100px" class="mr-3" alt="News Image">
+                                    <img src="@newsArticle.ImageUrl" class="mr-3 img-fluid" alt="News Image">
                                     <div class="media-body">
-                                        <h5 class="mt-0">@newsArticle.Title</h5>
+                                        <h5 class="mt-0">@Html.Raw(newsArticle.Title)</h5>
                                         <p class="text-muted">@newsArticle.Date.ToLongDateString()</p>
                                         @newsArticle.Subtitle
                                         <!-- add tags here -->

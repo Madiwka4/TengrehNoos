@@ -37,7 +37,7 @@ public static class DbInitializer
             Date = DateTime.UtcNow,
             Content = "This is a test article.",
             ImageUrl = new Uri("https://example.com/test.jpg"),
-            Category = "News",
+            Category = "Economic",
             Tags = tagsS,
         };
         

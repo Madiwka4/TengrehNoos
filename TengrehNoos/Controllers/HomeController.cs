@@ -25,8 +25,11 @@ public class HomeController : Controller
         var query = HttpContext.Request.Query["query"].ToString();
         var selectedTags = HttpContext.Request.Query.Keys.Where(k => Request.Query[k] == "true").ToArray();
         var sort = HttpContext.Request.Query["sort"].ToString();
+        var category = HttpContext.Request.Query["category"].ToString();
         var newsArticles = new System.Collections.Generic.List<NewsArticle>();
-        var tagsByCount = _context.Tags
+        var allCategories = _context.NewsArticles.Select(n => n.Category).Distinct().ToList();
+        var tagsByCount = await _context.Tags
+            .Include(t => t.NewsArticles)
             .Select(t => new TagsWithCountModel
             {
                 Tag = t,
@@ -34,7 +37,7 @@ public class HomeController : Controller
                 IsSelected = selectedTags.Contains(t.Name),
             })
             .OrderByDescending(t => t.Count)
-            .ToList();
+            .ToListAsync();
         if (string.IsNullOrEmpty(sort))
         {
             sort = "latest";
@@ -45,12 +48,15 @@ public class HomeController : Controller
             newsArticles = await _context.Tags
                 .Where(t => selectedTags.Contains(t.Name))
                 .SelectMany(t => t.NewsArticles).Where(n => n.Title.Contains(query) || n.Content.Contains(query) || query == "")
+                .Where(n => n.Category == category || category == "")
                 .Include(newsArticle => newsArticle.Tags)
                 .Distinct().ToListAsync();
         }
         else
         {
-            newsArticles = await _context.NewsArticles.Where(n => n.Title.Contains(query) || n.Content.Contains(query) || query == "").Include(newsArticle => newsArticle.Tags).ToListAsync();
+            newsArticles = await _context.NewsArticles.Where(n => n.Title.Contains(query) || n.Content.Contains(query) || query == "")
+                .Where(n => n.Category == category || category == "")
+                .Include(newsArticle => newsArticle.Tags).ToListAsync();
         }
         if (sort == "latest")
         {
@@ -79,11 +85,16 @@ public class HomeController : Controller
         {
             NewsArticles = newsarticlelist,
             Tags = tagsByCount,
+            Categories = allCategories,
         };
         ViewData["CurrentSort"] = sort;
         if (query != "")
         {
             ViewData["CurrentQuery"] = query;
+        }
+        if (category != "")
+        {
+            ViewData["CurrentCategory"] = category;
         }
         return View(output);
     }
@@ -110,11 +121,23 @@ public class HomeController : Controller
             Tags = newsArticle.Tags.Select(t => t.Name).ToList(),
             Subtitle = newsArticle.Subtitle,
         };
+        var currentArticleTags = newsArticle.Tags.Select(t => t.Name).ToList();
         var relatedArticles = _context.NewsArticles
-            .Where(n => n.Category == newsArticle.Category && n.Id != newsArticle.Id)
+            .Where(n => n.Tags.Any(t => currentArticleTags.Contains(t.Name)) && n.Id != newsArticle.Id)
             .OrderByDescending(n => n.Date)
-            .Take(3)
+            .Take(5)
             .ToList();
+        if (relatedArticles.Count < 5)
+        {
+            var relatedArticleIds = relatedArticles.Select(a => a.Id).ToList();
+            var moreArticles = _context.NewsArticles
+                .Where(n => n.Category == newsArticle.Category && !relatedArticleIds.Contains(n.Id) && n.Id != newsArticle.Id)
+                .OrderBy(n => Guid.NewGuid()) 
+                .Take(5 - relatedArticles.Count)
+                .ToList();
+
+            relatedArticles.AddRange(moreArticles);
+        }
         NewsArticlesAndRelatedModel output = new NewsArticlesAndRelatedModel
         {
             NewsArticle = newsarticle,
@@ -136,6 +159,17 @@ public class HomeController : Controller
     public IActionResult Privacy()
     {
         return View();
+    }
+    
+    [Route("Scraper/{key}")]
+    public void Scraper(string key)
+    {
+        if (key == "" || key == null)
+        {
+            key = "read";
+        }
+        var scraper = new WebScraperService();
+        scraper.ScrapeWebsite(new Uri("https://tengrinews.kz/"), key, _context);
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
