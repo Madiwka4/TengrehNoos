@@ -1,23 +1,11 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /TengrehNoos
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["TengrehNoos.csproj", "/TengrehNoos/"]
-RUN dotnet restore "TengrehNoos.csproj"
-COPY . .
-WORKDIR "/src/TengrehNoos"
-RUN dotnet build "TengrehNoos.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "TengrehNoos.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
+COPY . ./
+RUN dotnet restore
+RUN dotnet publish -c Release -o out
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /TengrehNoos
+COPY --from=build-env /TengrehNoos/out .
+COPY --from=build-env /TengrehNoos/schema.sql /docker-entrypoint-initdb.d/
 ENTRYPOINT ["dotnet", "TengrehNoos.dll"]

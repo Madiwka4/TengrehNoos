@@ -12,11 +12,11 @@
                     <h5 class="card-title">@Html.Raw(Model.NewsArticle.Title)</h5>
                     <p class="card-text">@Html.Raw(Model.NewsArticle.Content)</p>
                     <p class="card-text">
-                        <small class="text-muted">Posted on @Model.NewsArticle.Date by @Model.NewsArticle.Author</small>
+                        <small class="text-muted">Опубликовано @Model.NewsArticle.Date -- @Model.NewsArticle.Author</small>
                     </p>
                 </div>
                 <div class="card-footer">
-                    <small class="text-muted">Category: @Model.NewsArticle.Category</small>
+                    <small class="text-muted">Категория: @Model.NewsArticle.Category</small>
                     <div class="mt-2">
                         @foreach (var tag in Model.NewsArticle.Tags)
                         {
@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-4">
             <div class="card mb-4">
-                <div class="card-header">Related</div>
+                <div class="card-header">Похожее:</div>
                 <div class="card-body">
                     @{
                         foreach (var newsArticle in Model.RelatedArticles)

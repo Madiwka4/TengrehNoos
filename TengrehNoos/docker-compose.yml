@@ -6,7 +6,7 @@ services:
       context: . 
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "2048:8080"
     depends_on:
       - db
         
@@ -17,6 +17,8 @@ services:
       - POSTGRES_PASSWORD=DatabasePassword123
       - POSTGRES_DB=aspnet-TengrehNoos-1
     ports:
-      - "5432:5432"
+      - "2049:2049"
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 volumes:
   dbdata:

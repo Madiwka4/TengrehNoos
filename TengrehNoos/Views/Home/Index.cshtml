@@ -20,12 +20,12 @@
         page = (int)(ViewData["CurrentPage"] ?? 1);
     }
 }
-Last Updated: @ViewData["LastUpdated"] (UTC+0)
+Последнее обновление: @ViewData["LastUpdated"] (UTC+0)
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-4 order-md-2">
             <div class="card mb-4">
-                <div class="card-header">Sort By</div>
+                <div class="card-header">Сортировать</div>
                 <div class="card-body">
                     <form method="get" asp-action="Index" asp-controller="Home">
                         <ul class="list-group">
@@ -60,7 +60,7 @@ Last Updated: @ViewData["LastUpdated"] (UTC+0)
                 </div>
             </div>
             <div class="card mb-4">
-                <div class="card-header">Categories</div>
+                <div class="card-header">Фильтры</div>
                 <div class="card-body">
                     <form id="categoryForm" method="get" asp-action="Index" asp-controller="Home">
                         <div style="height:200px; overflow:auto;">
@@ -96,7 +96,7 @@ Last Updated: @ViewData["LastUpdated"] (UTC+0)
         </div>
         <div class="col-md-8 order-md-1">
             <div class="card mb-4">
-                <div class="card-header">Categories</div>
+                <div class="card-header">Категории</div>
                 <div class="card-body d-flex overflow-auto">
                     <a asp-action="Index" asp-controller="Home" asp-route-category="" class="m-2 btn @(ViewData["CurrentCategory"] == null ? "btn-primary" : "btn-secondary")">Всё</a>
                     @foreach (var category in Model.Categories)
@@ -108,7 +108,7 @@ Last Updated: @ViewData["LastUpdated"] (UTC+0)
                 </div>
             </div>
             <div class="card mb-4">
-                <div class="card-header">Search</div>
+                <div class="card-header">Поиск</div>
                 <div class="card-body">
                     <form method="get" asp-action="Index" asp-controller="Home">
                         <div class="input-group">
@@ -136,7 +136,7 @@ Last Updated: @ViewData["LastUpdated"] (UTC+0)
                 </div>
             </div>
             <div class="card mb-4">
-                <div class="card-header">Latest News</div>
+                <div class="card-header">Новости</div>
                 <div class="card-body">
                     @{
                         foreach (var newsArticle in Model.NewsArticles)
