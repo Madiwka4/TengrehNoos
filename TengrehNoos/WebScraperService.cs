@@ -8,6 +8,66 @@ using HtmlAgilityPack;
 using System;
 
 
+public class ScrapingBackgroundService : BackgroundService
+{
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<ScrapingBackgroundService> _logger;
+    
+    public ScrapingBackgroundService(IServiceProvider serviceProvider, ILogger<ScrapingBackgroundService> logger)
+    {
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            
+            _logger.LogInformation($"WebScraping starting: {DateTime.UtcNow}");
+            
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var webScraperService = scope.ServiceProvider.GetRequiredService<WebScraperService>();
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var lastMetaData = context.MetaData.OrderByDescending(m => m.LastScraped).FirstOrDefault();
+                if (lastMetaData != null && lastMetaData.LastScraped.AddHours(1) > DateTime.Now.ToUniversalTime())
+                {
+                    await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                    continue;
+                }
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "read", context);
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "medicine", context);
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "tech", context);
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "economic", context);
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "culture", context);
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "science", context);
+                
+            }
+            //write results to the database
+            var CurrentTime = DateTime.Now.ToUniversalTime();
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var metaData = new MetaData();
+                var previousMetaData = context.MetaData.OrderByDescending(m => m.LastScraped).FirstOrDefault();
+                int articlesScrapedLastTime = 0;
+                if (previousMetaData != null)
+                {
+                    articlesScrapedLastTime = previousMetaData.ArticlesScraped;
+                }
+                metaData.LastScraped = CurrentTime;
+                metaData.ArticlesScraped = context.NewsArticles.Count() - articlesScrapedLastTime;
+                metaData.TimeTaken = DateTime.Now.ToUniversalTime() - CurrentTime;
+                metaData.TotalArticles = context.NewsArticles.Count();
+                context.MetaData.Add(metaData);
+                context.SaveChanges();
+            }
+            
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+        }
+    }
+}
 
 public class TengriArticle
 {
@@ -161,10 +221,6 @@ public class WebScraperService
             {
                 foreach (var name in article.Tags)
                 {
-                    if (name == "Психология")
-                    {
-                        var x = 2;
-                    }
                     var tag = context.Tags.FirstOrDefault(t => t.Name == name);
                     if (tag == null)
                     {

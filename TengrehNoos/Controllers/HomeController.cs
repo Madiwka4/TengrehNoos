@@ -22,6 +22,15 @@ public class HomeController : Controller
     
     public async Task<IActionResult> Index()
     {
+        var page = HttpContext.Request.Query["p"].ToString();
+        int pageNumber = 1;
+        if (!int.TryParse(page, out pageNumber) || pageNumber < 1)
+        {
+            pageNumber = 1;
+        }
+
+        int skip = (pageNumber - 1) * 5;
+        
         var query = HttpContext.Request.Query["query"].ToString();
         var selectedTags = HttpContext.Request.Query.Keys.Where(k => Request.Query[k] == "true").ToArray();
         var sort = HttpContext.Request.Query["sort"].ToString();
@@ -58,13 +67,14 @@ public class HomeController : Controller
                 .Where(n => n.Category == category || category == "")
                 .Include(newsArticle => newsArticle.Tags).ToListAsync();
         }
+        int numberOfArticles = newsArticles.Count;
         if (sort == "latest")
         {
-            newsArticles = newsArticles.OrderByDescending(n => n.Date).Take(15).ToList();
+            newsArticles = newsArticles.OrderByDescending(n => n.Date).Skip(skip).Take(5).ToList();
         }
         else if (sort == "oldest")
         {
-            newsArticles = newsArticles.OrderBy(n => n.Date).Take(15).ToList();
+            newsArticles = newsArticles.OrderBy(n => n.Date).Skip(skip).Take(5).ToList();
         }
         var newsarticlelist = new List<NewsArticlePreviewModel>();
         foreach (var newsarticle in newsArticles)
@@ -86,6 +96,7 @@ public class HomeController : Controller
             NewsArticles = newsarticlelist,
             Tags = tagsByCount,
             Categories = allCategories,
+            Pages = numberOfArticles / 5,
         };
         ViewData["CurrentSort"] = sort;
         if (query != "")
@@ -95,6 +106,15 @@ public class HomeController : Controller
         if (category != "")
         {
             ViewData["CurrentCategory"] = category;
+        }
+        if (pageNumber > 1)
+        {
+            ViewData["CurrentPage"] = pageNumber;
+        }
+        var lastUpdated = _context.MetaData.FirstOrDefault();
+        if (lastUpdated != null)
+        {
+            ViewData["LastUpdated"] = lastUpdated.LastScraped.ToString("dd/MM/yyyy HH:mm:ss");
         }
         return View(output);
     }
@@ -154,11 +174,6 @@ public class HomeController : Controller
             }).ToList(),
         };
         return View(output);
-    }
-    
-    public IActionResult Privacy()
-    {
-        return View();
     }
     
     [Route("Scraper/{key}")]

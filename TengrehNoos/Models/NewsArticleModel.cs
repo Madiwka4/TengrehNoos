@@ -53,4 +53,6 @@ public class MainPageModel
     public List<TagsWithCountModel> Tags { get; set; } = new List<TagsWithCountModel>();
     
     public List<string> Categories { get; set; } = new List<string>();
+
+    public int Pages { get; set; } = 0;
 }

@@ -12,10 +12,15 @@
         {"Science", "Наука"},
         {"Tech", "Технологии"},
         {"Any", "Всё"},
-        {"News", "Тестовые Новости"}
+        {"News", "Тест"}
     };
+    int page = 1;
+    if (ViewData["CurrentPage"] != null)
+    {
+        page = (int)(ViewData["CurrentPage"] ?? 1);
+    }
 }
-
+Last Updated: @ViewData["LastUpdated"] (UTC+0)
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-4 order-md-2">
@@ -154,6 +159,54 @@
                                 </div>
                             </a>
                         }
+                    }
+                    @if (Model.Pages > 1)
+                    {
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination">
+                                @{
+                                     <li class="page-item @(page == 1 ? "active" : "")">
+                                        <form method="get" asp-action="Index" asp-controller="Home">
+                                            <input type="hidden" name="sort" value="@ViewData["CurrentSort"]"/>
+                                            <input type="hidden" name="query" value="@ViewData["CurrentQuery"]"/>
+                                            <input type="hidden" name="category" value="@ViewData["CurrentCategory"]"/>
+                                            @foreach (var tag in Model.Tags)
+                                            {
+                                                if (tag.IsSelected)
+                                                {
+                                                    <input type="hidden" name="@tag.Tag.Name" value="true"/>
+                                                }
+                                            }
+                                            <button type="submit" name="p" value="1" class="page-link">1</button>
+                                        </form>
+                                    </li>
+                                }
+                                @for (var i = (page > 2 ? page - 2 : 2); i <= Model.Pages; i++)
+                                {
+                                    if (i > page + 2 && i < Model.Pages - 2 && i != page)
+                                    {
+                                        <li class="page-item disabled"><a class="page-link">...</a></li>
+                                        i = Model.Pages - 1;
+                                    }
+
+                                    <li class="page-item @(page.ToString() == i.ToString() ? "active" : "")">
+                                        <form method="get" asp-action="Index" asp-controller="Home">
+                                            <input type="hidden" name="sort" value="@ViewData["CurrentSort"]"/>
+                                            <input type="hidden" name="query" value="@ViewData["CurrentQuery"]"/>
+                                            <input type="hidden" name="category" value="@ViewData["CurrentCategory"]"/>
+                                            @foreach (var tag in Model.Tags)
+                                            {
+                                                if (tag.IsSelected)
+                                                {
+                                                    <input type="hidden" name="@tag.Tag.Name" value="true"/>
+                                                }
+                                            }
+                                            <button type="submit" name="p" value="@i" class="page-link">@i</button>
+                                        </form>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
                     }
                 </div>
             </div>
