@@ -111,7 +111,7 @@ public class HomeController : Controller
         {
             ViewData["CurrentPage"] = pageNumber;
         }
-        var lastUpdated = _context.MetaData.FirstOrDefault();
+        var lastUpdated = _context.MetaData.OrderByDescending(m => m.LastScraped).FirstOrDefault();
         if (lastUpdated != null)
         {
             ViewData["LastUpdated"] = lastUpdated.LastScraped.ToString("dd/MM/yyyy HH:mm:ss");

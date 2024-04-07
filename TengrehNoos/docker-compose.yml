@@ -17,7 +17,7 @@ services:
       - POSTGRES_PASSWORD=DatabasePassword123
       - POSTGRES_DB=aspnet-TengrehNoos-1
     ports:
-      - "2049:2049"
+      - "2049:5432"
     volumes:
       - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
 volumes:

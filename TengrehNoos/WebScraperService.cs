@@ -31,8 +31,9 @@ public class ScrapingBackgroundService : BackgroundService
                 var webScraperService = scope.ServiceProvider.GetRequiredService<WebScraperService>();
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 var lastMetaData = context.MetaData.OrderByDescending(m => m.LastScraped).FirstOrDefault();
-                if (lastMetaData != null && lastMetaData.LastScraped.AddHours(1) > DateTime.Now.ToUniversalTime())
+                if (lastMetaData != null && lastMetaData.LastScraped.AddMinutes(15) > DateTime.Now.ToUniversalTime())
                 {
+                    _logger.LogInformation("Scraping already done in the last 15 minutes. Waiting for 5 minutes.");
                     await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                     continue;
                 }
@@ -63,7 +64,7 @@ public class ScrapingBackgroundService : BackgroundService
                 context.MetaData.Add(metaData);
                 context.SaveChanges();
             }
-            
+            _logger.LogInformation($"WebScraping finished: {DateTime.UtcNow}");
             await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
