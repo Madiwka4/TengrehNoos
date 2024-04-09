@@ -43,6 +43,7 @@ public class ScrapingBackgroundService : BackgroundService
                 webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "economic", context);
                 webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "culture", context);
                 webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "science", context);
+                webScraperService.ScrapeWebsite(new Uri("https://tengrinews.kz"), "kazakhstan_news", context);
                 
             }
             //write results to the database
@@ -150,7 +151,6 @@ public class WebScraperService
             
             article.Subtitle = announceNode.InnerText;
             
-            article.Time = metaNode.SelectSingleNode(".//span").InnerText;
             article.Author = "Tengri News";
             
             //check if such an article exists in the database
@@ -161,6 +161,11 @@ public class WebScraperService
             
             //load the article from the URL
             var articleDoc = web.Load(uri + article.Url);
+            
+            //get the article time from the first div with class date-time
+            var timeNode = articleDoc.DocumentNode.SelectSingleNode("//div[@class='date-time']");
+            article.Time = timeNode.InnerText;
+            
             
             //get the author from the first div with class content_main_meta_author_item_name
             var authorNode = articleDoc.DocumentNode.SelectSingleNode("//span[@class='content_main_meta_author_item_name']");
